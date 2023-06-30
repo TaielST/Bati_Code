@@ -1,4 +1,5 @@
 #include "ultrasonido.h"
+#include "Arduino.h"
 
 Ultrasonido::Ultrasonido(int trig, int echo)
 {
@@ -13,11 +14,11 @@ Ultrasonido::Ultrasonido(int trig, int echo)
 float Ultrasonido::sensorRead()
 {
     float distancia;
-    float utrasonidoPulso;
+    float ultrasonidoPulso;
     digitalWrite(pin_trig, HIGH);
     delayMicroseconds(10);
-    ditalWrite(pin_trig,LOW);
-    ultrasonidopulso = PulseIn(pin_echo, HIGH);
-    distace = ultrasonidoPulso / 58.2;
+    digitalWrite(pin_trig, LOW);
+    ultrasonidoPulso = pulseIn(pin_echo, HIGH);
+    distancia = ultrasonidoPulso / 58.2;
     return distancia;
 }
