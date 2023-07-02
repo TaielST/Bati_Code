@@ -23,8 +23,16 @@ float distanciaDerecha;
 //variables de velocidad
 #define VELOCIDAD_ATAQUE_MAX 255
 #define VELOCIDAD_BUSQUEDA 80
+#define VELOCIDAD_BUSQUEDA_DER 85
 #define VELOCIDAD_ATAQUE_MIN 135
 #define VELOCIDAD_ATAQUE_MID 190
+#define STOP 0
+
+//variables de distancia
+#define RIVAL_MIN 10
+#define RIVAL_MID 40
+#define RIVAL_MAX 50
+
 
 //instacia de objetos
 Ultrasonido *ultrasonidoDerecho = new Ultrasonido(PIN_TRIG_DER, PIN_ECHO_DER);
@@ -49,19 +57,116 @@ void lecturaSensor(){
   distanciaIzquierda = ultrasonidoIzquierdo->sensorRead();
 }
 
+void quieto(){
+  analogWrite(PIN_PWM_LEFT, STOP);
+  digitalWrite(PIN_DIR_LEFT, HIGH);
+  analogWrite(PIN_PWM_RIGHT, STOP);
+  digitalWrite(PIN_DIR_RIGHT, HIGH);
+}
 
 void adelante(){
-  analogWrite(PIN_PWM_LEFT, VELOCIDAD_ATAQUE_MIN);
+  analogWrite(PIN_PWM_LEFT, VELOCIDAD_ATAQUE_MID);
   digitalWrite(PIN_DIR_LEFT, LOW);
-  analogWrite(PIN_PWM_RIGHT, VELOCIDAD_ATAQUE_MIN);
+  analogWrite(PIN_PWM_RIGHT, VELOCIDAD_ATAQUE_MID);
   digitalWrite(PIN_DIR_RIGHT, LOW);
 }
 
 void busqueda(){
   analogWrite(PIN_PWM_LEFT, VELOCIDAD_BUSQUEDA);
   digitalWrite(PIN_DIR_LEFT, LOW);
-  analogWrite(PIN_PWM_RIGHT, VELOCIDAD_BUSQUEDA);
+  analogWrite(PIN_PWM_RIGHT, VELOCIDAD_BUSQUEDA_DER);
   digitalWrite(PIN_DIR_RIGHT, HIGH);
+}
+
+void giro_Izq(){
+  analogWrite(PIN_PWM_LEFT, VELOCIDAD_BUSQUEDA);
+  digitalWrite(PIN_DIR_LEFT, LOW);
+  analogWrite(PIN_PWM_RIGHT, VELOCIDAD_BUSQUEDA_DER);
+  digitalWrite(PIN_DIR_RIGHT, HIGH);
+}
+
+void giro_Der(){
+  analogWrite(PIN_PWM_LEFT, VELOCIDAD_BUSQUEDA);
+  digitalWrite(PIN_DIR_LEFT, HIGH);
+  analogWrite(PIN_PWM_RIGHT, VELOCIDAD_BUSQUEDA);
+  digitalWrite(PIN_DIR_RIGHT, LOW);
+}
+
+
+enum estrategia{
+  SELECT_ESTRATEGIA,
+  MONSTER,
+  MANTA,
+  SETT,
+  FULL
+};
+
+int estrategia = SELECT_ESTRATEGIA;
+
+enum monster{
+  TIEMPO_MONSTER,
+  BUSQUEDA_MONSTER,
+  GIRO_DER_MONSTER,
+  GIRO_IZQ_MONSTER,
+  ATAQUE_MONSTER
+};
+
+int monster = BUSQUEDA_MONSTER;
+
+void Monster(){
+  switch(monster){
+    case TIEMPO_MONSTER:
+    {
+      quieto();
+      delay(5000);
+      monster = BUSQUEDA_MONSTER;
+      break;
+    }
+    case BUSQUEDA_MONSTER:
+    {
+      busqueda();
+      if (distanciaDerecha <= RIVAL_MID && distanciaIzquierda > RIVAL_MID)
+      monster = GIRO_DER_MONSTER;
+      if (distanciaDerecha > RIVAL_MID && distanciaIzquierda <= RIVAL_MID)
+      monster = GIRO_IZQ_MONSTER;
+      if (distanciaDerecha < RIVAL_MID && distanciaIzquierda < RIVAL_MID)
+      monster = ATAQUE_MONSTER;
+      break;
+    }
+
+    case GIRO_DER_MONSTER:
+    {
+      giro_Der();
+      if (distanciaDerecha > RIVAL_MID && distanciaIzquierda <= RIVAL_MID)
+      monster = GIRO_IZQ_MONSTER;
+      if (distanciaDerecha < RIVAL_MID && distanciaIzquierda < RIVAL_MID)
+      monster = ATAQUE_MONSTER;
+      break;
+    }
+
+    case GIRO_IZQ_MONSTER:
+    {
+      giro_Izq();
+      if (distanciaDerecha <= RIVAL_MID && distanciaIzquierda > RIVAL_MID)
+      monster = GIRO_DER_MONSTER;
+      if (distanciaDerecha < RIVAL_MID && distanciaIzquierda < RIVAL_MID)
+      monster = ATAQUE_MONSTER;
+      break;
+    }
+
+    case ATAQUE_MONSTER:
+    {
+      adelante();
+      if(distanciaDerecha > RIVAL_MID && distanciaIzquierda > RIVAL_MID)
+      monster = BUSQUEDA_MONSTER;
+      if (distanciaDerecha <= RIVAL_MID && distanciaIzquierda > RIVAL_MID)
+      monster = GIRO_DER_MONSTER;
+      if (distanciaDerecha >= RIVAL_MID && distanciaIzquierda <= RIVAL_MID)
+      monster = GIRO_IZQ_MONSTER;
+      break;
+    }
+    
+  }
 }
 
 
@@ -75,8 +180,9 @@ void setup() {
 }
 
 void loop() {
-  delay(3000);
+  //delay(5000);
   //busqueda();
-  printUltrasonido();
+  Monster();
+  //printUltrasonido();
   lecturaSensor();
 }
