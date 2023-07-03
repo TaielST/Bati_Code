@@ -23,8 +23,16 @@ float distanciaDerecha;
 //variables de velocidad
 #define VELOCIDAD_ATAQUE_MAX 255
 #define VELOCIDAD_BUSQUEDA 80
+#define VELOCIDAD_BUSQUEDA_DER 85
 #define VELOCIDAD_ATAQUE_MIN 135
 #define VELOCIDAD_ATAQUE_MID 190
+#define STOP 0
+
+//variables de distancia
+#define RIVAL_MIN 10
+#define RIVAL_MID 40
+#define RIVAL_MAX 50
+
 
 //instacia de objetos
 Ultrasonido *ultrasonidoDerecho = new Ultrasonido(PIN_TRIG_DER, PIN_ECHO_DER);
@@ -49,36 +57,32 @@ void lecturaSensor(){
   distanciaIzquierda = ultrasonidoIzquierdo->sensorRead();
 }
 
+void quieto(){
+  analogWrite(PIN_PWM_LEFT, STOP);
+  digitalWrite(PIN_DIR_LEFT, HIGH);
+  analogWrite(PIN_PWM_RIGHT, STOP);
+  digitalWrite(PIN_DIR_RIGHT, HIGH);
+}
 
 void adelante(){
-  analogWrite(PIN_PWM_LEFT, VELOCIDAD_ATAQUE_MIN);
+  analogWrite(PIN_PWM_LEFT, VELOCIDAD_ATAQUE_MID);
   digitalWrite(PIN_DIR_LEFT, LOW);
-  analogWrite(PIN_PWM_RIGHT, VELOCIDAD_ATAQUE_MIN);
+  analogWrite(PIN_PWM_RIGHT, VELOCIDAD_ATAQUE_MID);
   digitalWrite(PIN_DIR_RIGHT, LOW);
 }
 
 void busqueda(){
   analogWrite(PIN_PWM_LEFT, VELOCIDAD_BUSQUEDA);
   digitalWrite(PIN_DIR_LEFT, LOW);
-  analogWrite(PIN_PWM_RIGHT, VELOCIDAD_BUSQUEDA);
+  analogWrite(PIN_PWM_RIGHT, VELOCIDAD_BUSQUEDA_DER);
   digitalWrite(PIN_DIR_RIGHT, HIGH);
 }
 
-enum ppa
-{
-  BUSCAR,
-  ATACAR
-};
-
-void pruebita(){
-  switch (ppa)
-  {
-  case 
-    break;
-  
-  default:
-    break;
-  }
+void giro_Izq(){
+  analogWrite(PIN_PWM_LEFT, VELOCIDAD_BUSQUEDA);
+  digitalWrite(PIN_DIR_LEFT, LOW);
+  analogWrite(PIN_PWM_RIGHT, VELOCIDAD_BUSQUEDA_DER);
+  digitalWrite(PIN_DIR_RIGHT, HIGH);
 }
 
 void setup() {
@@ -91,8 +95,9 @@ void setup() {
 }
 
 void loop() {
-  delay(3000);
+  //delay(5000);
   //busqueda();
-  printUltrasonido();
+  monster();
+  //printUltrasonido();
   lecturaSensor();
 }
