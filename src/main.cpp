@@ -1,5 +1,10 @@
 #include <AnalogWrite.h>
 #include <ultrasonido.h>
+#include <boton.h>
+#include <SSD1306.h>
+
+//variable de pin de boton
+#define PIN_BOTON 26
 //variables para los pines de los motores
 #define PIN_DIR_LEFT 23 
 #define PIN_PWM_LEFT 22 
@@ -33,10 +38,16 @@ float distanciaDerecha;
 #define RIVAL_MID 40
 #define RIVAL_MAX 50
 
+// variables y constantes para la pantalla oled
+#define PIN_SDA 16
+#define PIN_SCL 17
+
 
 //instacia de objetos
 Ultrasonido *ultrasonidoDerecho = new Ultrasonido(PIN_TRIG_DER, PIN_ECHO_DER);
 Ultrasonido *ultrasonidoIzquierdo = new Ultrasonido(PIN_TRIG_IZQ, PIN_ECHO_IZQ);
+Boton *start = new Boton(PIN_BOTON);
+SSD1306 display(0x3C, PIN_SDA, PIN_SCL); // inicializa pantalla con direccion 0x3C
 
 //imprime en pantalla la lectura de los sensores
 void printUltrasonido(){
@@ -105,7 +116,7 @@ int estrategia = SELECT_ESTRATEGIA;
 
 enum monster{
   TIEMPO_MONSTER,
-  BUSQUEDA_MONSTER,
+  BUSQUEDA_MONSTER, 
   GIRO_DER_MONSTER,
   GIRO_IZQ_MONSTER,
   ATAQUE_MONSTER
@@ -113,17 +124,34 @@ enum monster{
 
 int monster = TIEMPO_MONSTER;
 
+
 void Monster(){
   switch(monster){
     case TIEMPO_MONSTER:
     {
       quieto();
-      delay(5000);
-      monster = BUSQUEDA_MONSTER;
+      display.clear();
+      display.drawString(19, 0, "Estrategia Monster");
+      display.drawString(0, 9, "---------------------");
+      display.drawString(0, 28, "Press Start()");
+      display.display();
+      
+      if (start->GetIsPress()){
+        display.clear();
+        display.drawString(19, 0, "Estrategia Monster");
+        display.drawString(0, 9, "---------------------");
+        display.drawString(0, 28, "Iniciando");
+        display.display();
+        delay(5000);
+        monster = BUSQUEDA_MONSTER;
+      }
       break;
     }
     case BUSQUEDA_MONSTER:
     {
+      display.clear();
+      display.drawString(0, 28, "BUSCANDO");
+      display.display();
       busqueda();
       if (distanciaDerecha <= RIVAL_MID && distanciaIzquierda > RIVAL_MID)
       monster = GIRO_DER_MONSTER;
@@ -156,6 +184,12 @@ void Monster(){
 
     case ATAQUE_MONSTER:
     {
+      display.clear();
+      display.drawCircle(64, 32, 30);
+      display.fillCircle(50, 25, 5);
+      display.fillCircle(78, 25, 5);
+      display.display();
+
       adelante();
       if(distanciaDerecha > RIVAL_MID && distanciaIzquierda > RIVAL_MID)
       monster = BUSQUEDA_MONSTER;
@@ -170,12 +204,28 @@ void Monster(){
 }
 
 
+void Prueba_Oled(){
+/*display.clear();
+
+  // Dibujar la carita enojada
+  display.drawCircle(64, 32, 30);
+  display.fillCircle(50, 25, 5);
+  display.fillCircle(78, 25, 5);
+  display.display();
+  delay(2000);  // Pausa de 2 segundos antes de borrar la pantalla
+  */
+
+}
+
+
 void setup() {
   pinMode(PIN_DIR_RIGHT, OUTPUT);
   pinMode(PIN_PWM_RIGHT, OUTPUT);
   pinMode(PIN_DIR_LEFT, OUTPUT);
   pinMode(PIN_PWM_LEFT, OUTPUT);
-
+  start->SetFlanco(LOW);
+  display.init();
+display.setFont(ArialMT_Plain_10);
   Serial.begin(9600);
 }
 
@@ -185,4 +235,5 @@ void loop() {
   Monster();
   //printUltrasonido();
   lecturaSensor();
+  //Prueba_Oled();
 }
