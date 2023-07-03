@@ -11,7 +11,7 @@
 #define PIN_ECHO_DER 25
 #define PIN_TRIG_DER 33
 //#define DEBUG_ULTRASONIDO 0
-#define TICK_DEBUG_ULTRASONIDO 500
+#define TICK_DEBUG_ULTRASONIDO 50
 
 //no tengo idea que vendria a ser
 unsigned long currentTimeUltrasound = 0;
@@ -35,11 +35,11 @@ void printUltrasonido(){
   if (millis()>currentTimeUltrasound + TICK_DEBUG_ULTRASONIDO)
   {
     currentTimeUltrasound = millis();
-    Serial.print("Distancia Derecha"); 
-    Serial.print(distanciaDerecha);
+    Serial.println("Distancia Derecha"); 
+    Serial.println(distanciaDerecha);
     Serial.print("///");
-    Serial.print("Distancia Izquierda");
-    Serial.print(distanciaIzquierda);
+    Serial.println("Distancia Izquierda");
+    Serial.println(distanciaIzquierda);
   }
 }
 
@@ -64,6 +64,22 @@ void busqueda(){
   digitalWrite(PIN_DIR_RIGHT, HIGH);
 }
 
+enum ppa
+{
+  BUSCAR,
+  ATACAR
+};
+
+void pruebita(){
+  switch (ppa)
+  {
+  case 
+    break;
+  
+  default:
+    break;
+  }
+}
 
 void setup() {
   pinMode(PIN_DIR_RIGHT, OUTPUT);
