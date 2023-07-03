@@ -11,7 +11,7 @@
 #define PIN_ECHO_DER 25
 #define PIN_TRIG_DER 33
 //#define DEBUG_ULTRASONIDO 0
-#define TICK_DEBUG_ULTRASONIDO 50
+#define TICK_DEBUG_ULTRASONIDO 500
 
 //no tengo idea que vendria a ser
 unsigned long currentTimeUltrasound = 0;
@@ -22,8 +22,8 @@ float distanciaDerecha;
 
 //variables de velocidad
 #define VELOCIDAD_ATAQUE_MAX 255
-#define VELOCIDAD_BUSQUEDA 80
-#define VELOCIDAD_BUSQUEDA_DER 85
+#define VELOCIDAD_BUSQUEDA 70
+#define VELOCIDAD_BUSQUEDA_DER 75
 #define VELOCIDAD_ATAQUE_MIN 135
 #define VELOCIDAD_ATAQUE_MID 190
 #define STOP 0
@@ -43,11 +43,11 @@ void printUltrasonido(){
   if (millis()>currentTimeUltrasound + TICK_DEBUG_ULTRASONIDO)
   {
     currentTimeUltrasound = millis();
-    Serial.println("Distancia Derecha"); 
-    Serial.println(distanciaDerecha);
+    Serial.print("Distancia Derecha"); 
+    Serial.print(distanciaDerecha);
     Serial.print("///");
-    Serial.println("Distancia Izquierda");
-    Serial.println(distanciaIzquierda);
+    Serial.print("Distancia Izquierda");
+    Serial.print(distanciaIzquierda);
   }
 }
 
@@ -80,10 +80,95 @@ void busqueda(){
 
 void giro_Izq(){
   analogWrite(PIN_PWM_LEFT, VELOCIDAD_BUSQUEDA);
-  digitalWrite(PIN_DIR_LEFT, LOW);
+  digitalWrite(PIN_DIR_LEFT, HIGH);
   analogWrite(PIN_PWM_RIGHT, VELOCIDAD_BUSQUEDA_DER);
+  digitalWrite(PIN_DIR_RIGHT, LOW);
+}
+
+void giro_Der(){
+  analogWrite(PIN_PWM_LEFT, VELOCIDAD_BUSQUEDA);
+  digitalWrite(PIN_DIR_LEFT, LOW);
+  analogWrite(PIN_PWM_RIGHT, VELOCIDAD_BUSQUEDA);
   digitalWrite(PIN_DIR_RIGHT, HIGH);
 }
+
+
+enum estrategia{
+  SELECT_ESTRATEGIA,
+  MONSTER,
+  MANTA,
+  SETT,
+  FULL
+};
+
+int estrategia = SELECT_ESTRATEGIA;
+
+enum monster{
+  TIEMPO_MONSTER,
+  BUSQUEDA_MONSTER,
+  GIRO_DER_MONSTER,
+  GIRO_IZQ_MONSTER,
+  ATAQUE_MONSTER
+};
+
+int monster = TIEMPO_MONSTER;
+
+void Monster(){
+  switch(monster){
+    case TIEMPO_MONSTER:
+    {
+      quieto();
+      delay(5000);
+      monster = BUSQUEDA_MONSTER;
+      break;
+    }
+    case BUSQUEDA_MONSTER:
+    {
+      busqueda();
+      if (distanciaDerecha <= RIVAL_MID && distanciaIzquierda > RIVAL_MID)
+      monster = GIRO_DER_MONSTER;
+      if (distanciaDerecha > RIVAL_MID && distanciaIzquierda <= RIVAL_MID)
+      monster = GIRO_IZQ_MONSTER;
+      if (distanciaDerecha < RIVAL_MID && distanciaIzquierda < RIVAL_MID)
+      monster = ATAQUE_MONSTER;
+      break;
+    }
+
+    case GIRO_DER_MONSTER:
+    {
+      giro_Der();
+      if (distanciaDerecha > RIVAL_MID && distanciaIzquierda <= RIVAL_MID)
+      monster = GIRO_IZQ_MONSTER;
+      if (distanciaDerecha < RIVAL_MID && distanciaIzquierda < RIVAL_MID)
+      monster = ATAQUE_MONSTER;
+      break;
+    }
+
+    case GIRO_IZQ_MONSTER:
+    {
+      giro_Izq();
+      if (distanciaDerecha <= RIVAL_MID && distanciaIzquierda > RIVAL_MID)
+      monster = GIRO_DER_MONSTER;
+      if (distanciaDerecha < RIVAL_MID && distanciaIzquierda < RIVAL_MID)
+      monster = ATAQUE_MONSTER;
+      break;
+    }
+
+    case ATAQUE_MONSTER:
+    {
+      adelante();
+      if(distanciaDerecha > RIVAL_MID && distanciaIzquierda > RIVAL_MID)
+      monster = BUSQUEDA_MONSTER;
+      if (distanciaDerecha <= RIVAL_MID && distanciaIzquierda > RIVAL_MID)
+      monster = GIRO_DER_MONSTER;
+      if (distanciaDerecha > RIVAL_MID && distanciaIzquierda <= RIVAL_MID)
+      monster = GIRO_IZQ_MONSTER;
+      break;
+    }
+    
+  }
+}
+
 
 void setup() {
   pinMode(PIN_DIR_RIGHT, OUTPUT);
@@ -97,7 +182,7 @@ void setup() {
 void loop() {
   //delay(5000);
   //busqueda();
-  monster();
+  Monster();
   //printUltrasonido();
   lecturaSensor();
 }
