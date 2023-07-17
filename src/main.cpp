@@ -150,8 +150,8 @@ void Monster(){
     case BUSQUEDA_MONSTER:
     {
       display.clear();
-      display.drawString(0, 28, "BUSCANDO");
-      display.display();
+        display.drawString(0, 28, "BUSCANDO");
+        display.display();
       busqueda();
       if (distanciaDerecha <= RIVAL_MID && distanciaIzquierda > RIVAL_MID)
       monster = GIRO_DER_MONSTER;
@@ -164,6 +164,9 @@ void Monster(){
 
     case GIRO_DER_MONSTER:
     {
+      display.clear();
+        display.drawString(0, 28, "GIRANDO DER");
+        display.display();
       giro_Der();
       if (distanciaDerecha > RIVAL_MID && distanciaIzquierda <= RIVAL_MID)
       monster = GIRO_IZQ_MONSTER;
@@ -174,6 +177,9 @@ void Monster(){
 
     case GIRO_IZQ_MONSTER:
     {
+      display.clear();
+        display.drawString(0, 28, "GIRANDO IZQ");
+        display.display();
       giro_Izq();
       if (distanciaDerecha <= RIVAL_MID && distanciaIzquierda > RIVAL_MID)
       monster = GIRO_DER_MONSTER;
@@ -183,13 +189,10 @@ void Monster(){
     }
 
     case ATAQUE_MONSTER:
+    display.clear();
+        display.drawString(0, 28, "ATACANDO");
+        display.display();
     {
-      display.clear();
-      display.drawCircle(64, 32, 30);
-      display.fillCircle(50, 25, 5);
-      display.fillCircle(78, 25, 5);
-      display.display();
-
       adelante();
       if(distanciaDerecha > RIVAL_MID && distanciaIzquierda > RIVAL_MID)
       monster = BUSQUEDA_MONSTER;
@@ -204,8 +207,8 @@ void Monster(){
 }
 
 
-void Prueba_Oled(){
-/*display.clear();
+/*void Prueba_Oled(){
+display.clear();
 
   // Dibujar la carita enojada
   display.drawCircle(64, 32, 30);
@@ -213,9 +216,9 @@ void Prueba_Oled(){
   display.fillCircle(78, 25, 5);
   display.display();
   delay(2000);  // Pausa de 2 segundos antes de borrar la pantalla
-  */
+  
 
-}
+}*/
 
 
 void setup() {
@@ -225,7 +228,6 @@ void setup() {
   pinMode(PIN_PWM_LEFT, OUTPUT);
   start->SetFlanco(LOW);
   display.init();
-display.setFont(ArialMT_Plain_10);
   Serial.begin(9600);
 }
 
