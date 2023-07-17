@@ -206,6 +206,44 @@ void Monster(){
   }
 }
 
+enum full {
+  QUIETO_FULL,
+  FULL_ATAQUE
+};
+
+int full = QUIETO_FULL;
+
+void Full()
+{
+  switch(full){
+    case QUIETO_FULL:{
+      quieto();
+      display.clear();
+      display.drawString(19, 0, "Estrategia Full");
+      display.drawString(0, 9, "---------------------");
+      display.drawString(0, 28, "Press Start()");
+      display.display();
+      
+      if (start->GetIsPress()){
+        display.clear();
+        display.drawString(19, 0, "Estrategia Full");
+        display.drawString(0, 9, "---------------------");
+        display.drawString(0, 28, "Iniciando");
+        display.display();
+        delay(5000);
+        full = FULL_ATAQUE;
+      }
+      break;
+    }
+
+    case FULL_ATAQUE:{
+      adelante();
+      break;
+    }
+  }
+}
+
+
 
 /*void Prueba_Oled(){
 display.clear();
