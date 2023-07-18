@@ -103,6 +103,13 @@ void giro_Der(){
   digitalWrite(PIN_DIR_RIGHT, HIGH);
 }
 
+void giro_Rapido(){
+  analogWrite(PIN_PWM_RIGHT, VELOCIDAD_ATAQUE_MAX);
+  digitalWrite(PIN_DIR_RIGHT,HIGH);
+  analogWrite(PIN_PWM_LEFT, VELOCIDAD_ATAQUE_MAX);
+  digitalWrite(PIN_DIR_LEFT, LOW);
+}
+
 
 enum estrategia{
   SELECT_ESTRATEGIA,
@@ -243,6 +250,87 @@ void Full()
   }
 }
 
+enum manta{
+  QUIETO_MANTA,
+  GIRO_RAPIDO_MANTA,
+  BUSQUEDA_MANTA,
+  ATAQUE_MANTA,
+  GIRO_DER_MANTA,
+  GIRO_IZQ_MANTA
+};
+
+int manta = QUIETO_MANTA;
+
+void Manta(){
+  switch(manta){
+    case QUIETO_MANTA:{
+      quieto();
+      display.clear();
+      display.drawString(19, 0, "Estrategia Manta");
+      display.drawString(0, 9, "---------------------");
+      display.drawString(0, 28, "Press Start()");
+      display.display();
+      
+      if (start->GetIsPress()){
+        display.clear();
+        display.drawString(19, 0, "Estrategia Manta");
+        display.drawString(0, 9, "---------------------");
+        display.drawString(0, 28, "Iniciando");
+        display.display();
+        delay(5000);
+        manta = GIRO_RAPIDO_MANTA;
+      }
+      break;
+    }
+
+    case GIRO_RAPIDO_MANTA:{
+      giro_Rapido();
+      delay(15);
+      manta = BUSQUEDA_MANTA;
+      break;
+    }
+
+    case BUSQUEDA_MANTA:{
+      busqueda();
+      if (distanciaDerecha <= RIVAL_MID && distanciaIzquierda > RIVAL_MID)
+      manta = GIRO_DER_MANTA;
+      if (distanciaDerecha > RIVAL_MID && distanciaIzquierda <= RIVAL_MID)
+      manta = GIRO_IZQ_MANTA;
+      if (distanciaDerecha < RIVAL_MID && distanciaIzquierda < RIVAL_MID)
+      manta = ATAQUE_MANTA;
+      break;
+    }
+
+    case GIRO_DER_MANTA:{
+      giro_Der();
+      if (distanciaDerecha > RIVAL_MID && distanciaIzquierda <= RIVAL_MID)
+      manta = GIRO_IZQ_MANTA;
+      if (distanciaDerecha < RIVAL_MID && distanciaIzquierda < RIVAL_MID)
+      manta = ATAQUE_MANTA;
+      break;
+    }
+
+    case GIRO_IZQ_MANTA:{
+      giro_Izq();
+      if (distanciaDerecha <= RIVAL_MID && distanciaIzquierda > RIVAL_MID)
+      manta = GIRO_DER_MANTA;
+      if (distanciaDerecha < RIVAL_MID && distanciaIzquierda < RIVAL_MID)
+      manta = ATAQUE_MANTA;
+      break;
+    }
+
+    case  ATAQUE_MANTA:{
+      adelante();
+      if(distanciaDerecha > RIVAL_MID && distanciaIzquierda > RIVAL_MID)
+      monster = BUSQUEDA_MONSTER;
+      if (distanciaDerecha <= RIVAL_MID && distanciaIzquierda > RIVAL_MID)
+      monster = GIRO_DER_MONSTER;
+      if (distanciaDerecha > RIVAL_MID && distanciaIzquierda <= RIVAL_MID)
+      monster = GIRO_IZQ_MONSTER;
+      break;
+    }
+  }
+}
 
 
 /*void Prueba_Oled(){
